@@ -15,6 +15,7 @@ async def on_startup(dispatcher):
     await db.create_table_users()
     logging.info('Готово')
 
+    # Устанавливает команды
     await set_default_commands(dispatcher)
 
     # Уведомляет про запуск

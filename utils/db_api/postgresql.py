@@ -59,7 +59,7 @@ class Database:
         sql = """
         CREATE TABLE IF NOT EXISTS plank_schema.Users(
         id VARCHAR(255) NOT NULL UNIQUE,
-        name VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL UNIQUE,
         full_name VARCHAR(255) NULL,
         chat_id BIGINT NOT NULL,
         user_id BIGINT NOT NULL,
@@ -77,7 +77,7 @@ class Database:
         await self.execute(sql, execute=True)
 
     @staticmethod
-    def format_args(sql, parameters: dict):
+    def format_args_select_user(sql, parameters: dict):
         sql += " AND ".join([
             f"{item} = ${num}" for num, item in enumerate(parameters.keys(),
                                                           start=1)
@@ -85,7 +85,7 @@ class Database:
         return sql, tuple(parameters.values())
 
     @staticmethod
-    def format_args2(sql, parameters: dict):
+    def format_args_add_user(sql, parameters: dict):
         sql += "".join([
             f"{item}, " for item in parameters.keys()
         ])
@@ -97,70 +97,111 @@ class Database:
         sql = sql[:-2] + ") returning *"
         return sql, tuple(parameters.values())
 
-    async def add_column(self):
-        sql = """ALTER TABLE plank_schema.Users ADD COLUMN IF NOT EXISTS date_joined TIMESTAMP"""
+    async def add_column(self, new_columns):
+        sql = """ALTER TABLE plank_schema.Users"""
+        for key, value in new_columns.items():
+            sql += " ADD COLUMN IF NOT EXISTS " + key + ' ' + value + ","
+        sql = sql[:-1]
         return await self.execute(sql, execute=True)
 
     '''To run code above and add new columns
     db = Database()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(db.add_column())'''
+    new_columns = {
+        "test1": 'BIGINT',
+        "test2": 'BIGINT'
+    }
+    loop.run_until_complete(db.add_column(new_columns))'''
 
     async def add_user(self, **kwargs):
-        sql = """INSERT INTO plank_schema.Users ("""
-        static_params = {
-            'current__time': 60,
-            'time_increase': 10,
-            'increase_in_days': 14,
-            'increase_day': datetime.datetime.today().date() + timedelta(days=14),
-            'date_joined': datetime.datetime.today().date(),
-            'times_missed': 0,
-            'planked_today': False,
-            'vacation': False,
-            'politeness': 'polite'
-        }
-        kwargs.update(static_params)
-        sql, parameters = self.format_args2(sql, parameters=kwargs)
-        return await self.execute(sql, *parameters,
-                                  fetchrow=True)
+        try:
+            sql = """INSERT INTO plank_schema.Users ("""
+            static_params = {
+                'current__time': 60,
+                'time_increase': 10,
+                'increase_in_days': 14,
+                'increase_day': datetime.datetime.today().date() + timedelta(days=14),
+                'date_joined': datetime.datetime.today().date(),
+                'times_missed': 0,
+                'planked_today': False,
+                'vacation': False,
+                'politeness': 'polite'
+            }
+            kwargs.update(static_params)
+            sql, parameters = self.format_args_add_user(sql, parameters=kwargs)
+            return await self.execute(sql, *parameters,
+                                      fetchrow=True)
+        except asyncpg.exceptions.NotNullViolationError:
+            print('Not enough data to create user')
+        except asyncpg.exceptions.UniqueViolationError:
+            print('duplicate key value violates unique constraint in table')
+            print('adding new to name')
+            kwargs['name'] = kwargs['name'] + 'New'
+            print(kwargs['name'])
+            await self.add_user(**kwargs)
 
     async def select_all_users(self):
         sql = "SELECT * FROM plank_schema.Users"
         return await self.execute(sql, fetch=True)
 
-    async def select_user(self, **kwargs):
+    async def select_user(self, table_name='Users', **kwargs):
         sql = "SELECT * FROM plank_schema.Users WHERE "
-        sql, parameters = self.format_args(sql, parameters=kwargs)
+        sql, parameters = self.format_args_select_user(sql, parameters=kwargs)
         return await self.execute(sql, *parameters, fetchrow=True)
 
-    async def count_users(self):
+    async def count_users(self, table_name='Users'):
         sql = "SELECT COUNT(*) FROM plank_schema.Users"
         return await self.execute(sql, fetchval=True)
 
-    async def update_name(self, name, user_id, chat_id):
+    async def check_if_user_exists(self, **kwargs):
+        print('Checking if user exists')
+        user = await self.select_user(**kwargs)
+        if user:
+            print('User '+ user['name']+ ', exists')
+            return user
+        else:
+            print('trying to add new user')
+            await self.add_user(**kwargs)
+            user = await self.select_user(id=kwargs['id'])
+            return user
+
+    async def update_name(self, name, user_id, chat_id, table_name='Users'):
         sql = "UPDATE plank_schema.Users SET name =$1 WHERE user_id=$2 AND chat_id=$3"
         return await self.execute(sql, name, user_id, chat_id, execute=True)
 
-'''
+    async def update_parameter(self, parameter, new_value, user_id, chat_id, table_name='Users'):
+        sql = "UPDATE plank_schema." + table_name + " SET " + parameter + " =$1 WHERE user_id=$2 AND chat_id=$3"
+        print(sql)
+        return await self.execute(sql, new_value, user_id, chat_id, execute=True)
+
+
 db = Database()
 loop = asyncio.get_event_loop()
 
 
-loop.run_until_complete(db.create_connection())
+#loop.run_until_complete(db.create_connection())
 loop.run_until_complete(db.create_table_users())
 
 
 async def add_users():
     users = [
-        ('1472583669', 'Olegg', 'DylevichOleg', 123, 456),
-        ('9876546321', 'Kramm', 'Kram Kramovich', 123, 741),
-        ('1234567689', 'Andreyy', 'Andrey Andreich', 123, 963)
+        ('1472581131669', 'Olegg', 'DylevichOleg', 123, 4561),
+        ('9876546111321', 'Kramm', 'Kram Kramovich', 123, 7411),
+        ('1234567111689', 'Andreyy', 'Andrey Andreich', 123, 9613)
     ]
     list_of_db_users = []
     for id, name, full_name, chat_id, user_id in users:
         user = await db.add_user(id=id, name=name, full_name=full_name, chat_id=chat_id, user_id=user_id)
         list_of_db_users.append(user)
 
-loop.run_until_complete(add_users())
-'''
+#loop.run_until_complete(add_users())
+new_columns = {
+    "test7": 'BIGINT'
+}
+loop.run_until_complete(db.count_users())
+#oleg = loop.run_until_complete(db.select_user(**{'name':'Olegg'}))
+andrey = loop.run_until_complete(db.select_user(name='Andrey23'))
+oleg = loop.run_until_complete(db.check_if_user_exists(name='Olegg', id='98345634741654', chat_id=687, user_id=11))
+print(oleg)
+#loop.run_until_complete(db.update_parameter(parameter='name', new_value='Андрей', user_id=oleg['user_id'], chat_id=oleg['chat_id']))
 
