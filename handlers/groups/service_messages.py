@@ -6,14 +6,14 @@ import asyncpg.exceptions
 @dp.message_handler(content_types=types.ContentType.NEW_CHAT_MEMBERS)
 async def new_member(message: types.Message):
     try:
-        user = await db.add_user(
+        user = await db.check_if_user_exists(
             id=str(str(message.new_chat_members[0].id)+str(message.chat.id)),
             name=message.new_chat_members[0].first_name,
             full_name=message.new_chat_members[0].full_name,
             chat_id=int(message.chat.id),
             user_id=int(message.new_chat_members[0].id))
     except asyncpg.exceptions.UniqueViolationError:
-        user = await db.add_user(
+        user = await db.check_if_user_exists(
             id=str(str(message.new_chat_members[0].id)+str(message.chat.id)),
             name=str(message.new_chat_members[0].first_name) + str('New'),
             full_name=message.new_chat_members[0].full_name,
@@ -43,4 +43,14 @@ async def new_member(message: types.Message):
                                       ' in the beginning). For example +5 sec every month. \n'
                                       ' 5. *Penalties* For each skipped day you have to pay 1000 rubles. We do not collect'
                                       ' more that 3000 rubles a month.')
-    #message.reply
+
+
+@dp.message_handler(content_types=types.ContentType.LEFT_CHAT_MEMBER)
+async def leaver(message: types.Message):
+    user = await db.select_user(id=str(str(message.left_chat_member.id)+str(message.chat.id)))
+    number_of_misses = user['times_missed']
+    await message.answer('Looks like we have a leaver... It is a shame, but everyone walks his own path. \n'
+                         'User ' + message.left_chat_member.full_name + ' currently has ' + str(number_of_misses) + ' misses.')
+    if message.left_chat_member.id == message.from_user.id:
+        await message.answer('Looks like we have a leaver... It is a shame, but everyone walks his own path. \n'
+                         'User ' + message.left_chat_member.full_name + ' currently has ' + str(number_of_misses) + ' misses.')

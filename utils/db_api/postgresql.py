@@ -129,16 +129,22 @@ class Database:
             }
             kwargs.update(static_params)
             sql, parameters = self.format_args_add_user(sql, parameters=kwargs)
+            print('Trying to add new user')
             return await self.execute(sql, *parameters,
                                       fetchrow=True)
         except asyncpg.exceptions.NotNullViolationError:
             print('Not enough data to create user')
         except asyncpg.exceptions.UniqueViolationError:
             print('duplicate key value violates unique constraint in table')
-            print('adding new to name')
-            kwargs['name'] = kwargs['name'] + 'New'
-            print(kwargs['name'])
-            await self.add_user(**kwargs)
+            user = await self.select_user(id=kwargs['id'])
+            if user is None:
+                print('adding new to name')
+                kwargs['name'] = kwargs['name'] + 'New'
+                print(kwargs['name'])
+                await self.add_user(**kwargs)
+            else:
+                print('User ' + kwargs['name'] + ' already exists.')
+                return user
 
     async def select_all_users(self):
         sql = "SELECT * FROM plank_schema.Users"
@@ -153,16 +159,27 @@ class Database:
         sql = "SELECT COUNT(*) FROM plank_schema.Users"
         return await self.execute(sql, fetchval=True)
 
-    async def check_if_user_exists(self, **kwargs):
+    async def check_if_user_exists(self, message=None, **kwargs):
         print('Checking if user exists')
-        user = await self.select_user(**kwargs)
+        if message is not None:
+            user = await self.select_user(id=str(str(message.from_user.id)+str(message.chat.id)))
+        else:
+            user = await self.select_user(**kwargs)
+
         if user:
             print('User '+ user['name']+ ', exists')
             return user
         else:
             print('trying to add new user')
-            await self.add_user(**kwargs)
-            user = await self.select_user(id=kwargs['id'])
+            if message is not None:
+                await self.add_user(id=str(str(message.from_user.id)+str(message.chat.id)),
+                                    user_id=message.from_user.id,
+                                    chat_id=message.chat.id,
+                                    name=message.from_user.first_name,
+                                    full_name=message.from_user.full_name)
+                user = await self.select_user(id=str(str(message.from_user.id)+str(message.chat.id)))
+            else:
+                await self.add_user(**kwargs)
             return user
 
     async def update_name(self, name, user_id, chat_id, table_name='Users'):
@@ -174,7 +191,7 @@ class Database:
         print(sql)
         return await self.execute(sql, new_value, user_id, chat_id, execute=True)
 
-
+'''
 db = Database()
 loop = asyncio.get_event_loop()
 
@@ -205,3 +222,4 @@ oleg = loop.run_until_complete(db.check_if_user_exists(name='Olegg', id='9834563
 print(oleg)
 #loop.run_until_complete(db.update_parameter(parameter='name', new_value='Андрей', user_id=oleg['user_id'], chat_id=oleg['chat_id']))
 
+'''
