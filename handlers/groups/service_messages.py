@@ -20,7 +20,10 @@ async def new_member(message: types.Message):
             chat_id=int(message.chat.id),
             user_id=int(message.new_chat_members[0].id))
     print('New user: ', user)
-
+    await db.update_parameter(parameter='status',
+                              new_value='active',
+                              user_id=message.new_chat_members[0].id,
+                              chat_id=message.chat.id)
     members = ', '.join([m.get_mention() for m in message.new_chat_members])
     await bot.send_message(message.chat.id, 'Wazuuup, ' + members +'! I am very happy to see a new member in our cool and fun challenge!'
                                       ' I am pretty sure that whoever invited you has already explained all the simple rules '
@@ -47,10 +50,16 @@ async def new_member(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.LEFT_CHAT_MEMBER)
 async def leaver(message: types.Message):
-    user = await db.select_user(id=str(str(message.left_chat_member.id)+str(message.chat.id)))
+    user = await db.select_row(id=str(str(message.left_chat_member.id) + str(message.chat.id)))
     number_of_misses = user['times_missed']
     await message.answer('Looks like we have a leaver... It is a shame, but everyone walks his own path. \n'
                          'User ' + message.left_chat_member.full_name + ' currently has ' + str(number_of_misses) + ' misses.')
+    await db.update_parameter(parameter='status', new_value='inactive',
+                              user_id=message.left_chat_member.id,
+                              chat_id=message.chat.id)
     if message.left_chat_member.id == message.from_user.id:
         await message.answer('Looks like we have a leaver... It is a shame, but everyone walks his own path. \n'
                          'User ' + message.left_chat_member.full_name + ' currently has ' + str(number_of_misses) + ' misses.')
+        await db.update_parameter(parameter='status', new_value='inactive',
+                                  user_id=message.left_chat_member.id,
+                                  chat_id=message.chat.id)

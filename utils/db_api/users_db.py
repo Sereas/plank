@@ -1,59 +1,11 @@
-import asyncio
-import logging
-from typing import Union
 import datetime
 from datetime import timedelta
 import asyncpg
-from asyncpg import Pool, Connection
 
-from data import config
+from utils.db_api.parent_db import Database
 
 
-class Database:
-
-    def __init__(self):
-        self.pool: Union[Pool, None] = None
-
-    '''async def create_connection(self):
-        self.pool = await asyncpg.create_pool(
-            user=config.USER,
-            password=config.PASSWORD,
-            host=config.HOST,
-            port=config.PORT,
-            database=config.DATABASE,
-            max_inactive_connection_lifetime=5
-        )'''
-
-    async def execute(self, command, *args,
-                      fetch: bool = False,  # достать массив массивов (много строк)
-                      fetchval: bool = False,  # достать одно значение, например, кол-во пользователей
-                      fetchrow: bool = False,  # достать одну строчку
-                      execute: bool = False):
-        logging.info('Создаем подключение к базе данных')
-        self.pool = await asyncpg.create_pool(
-            user=config.USER,
-            password=config.PASSWORD,
-            host=config.HOST,
-            port=config.PORT,
-            database=config.DATABASE,
-            max_inactive_connection_lifetime=5
-        )
-        async with self.pool.acquire() as connection:
-            connection: Connection
-            logging.info('Idle connections before close: ' + str(self.pool.get_idle_size()))
-            async with connection.transaction():
-                if fetch:
-                    result = await connection.fetch(command, *args)
-                elif fetchval:
-                    result = await connection.fetchval(command, *args)
-                elif fetchrow:
-                    result = await connection.fetchrow(command, *args)
-                elif execute:
-                    result = await connection.execute(command, *args)
-        logging.info('Закрыаем подключения к базе данных')
-        await self.pool.close()
-        logging.info('Idle connections after close: ' + str(self.pool.get_idle_size()))
-        return result
+class DatabaseUsers(Database):
 
     async def create_table_users(self):
         sql = """
@@ -71,18 +23,11 @@ class Database:
         times_missed INT NOT NULL,
         planked_today BOOLEAN NOT NULL,
         vacation BOOLEAN NOT NULL,
-        politeness VARCHAR(255) NOT NULL
+        politeness VARCHAR(255) NOT NULL,
+        status VARCHAR(255) NOT NULL
         );
         """
         await self.execute(sql, execute=True)
-
-    @staticmethod
-    def format_args_select_user(sql, parameters: dict):
-        sql += " AND ".join([
-            f"{item} = ${num}" for num, item in enumerate(parameters.keys(),
-                                                          start=1)
-        ])
-        return sql, tuple(parameters.values())
 
     @staticmethod
     def format_args_add_user(sql, parameters: dict):
@@ -97,22 +42,6 @@ class Database:
         sql = sql[:-2] + ") returning *"
         return sql, tuple(parameters.values())
 
-    async def add_column(self, new_columns):
-        sql = """ALTER TABLE plank_schema.Users"""
-        for key, value in new_columns.items():
-            sql += " ADD COLUMN IF NOT EXISTS " + key + ' ' + value + ","
-        sql = sql[:-1]
-        return await self.execute(sql, execute=True)
-
-    '''To run code above and add new columns
-    db = Database()
-    loop = asyncio.get_event_loop()
-    new_columns = {
-        "test1": 'BIGINT',
-        "test2": 'BIGINT'
-    }
-    loop.run_until_complete(db.add_column(new_columns))'''
-
     async def add_user(self, **kwargs):
         try:
             sql = """INSERT INTO plank_schema.Users ("""
@@ -125,7 +54,8 @@ class Database:
                 'times_missed': 0,
                 'planked_today': False,
                 'vacation': False,
-                'politeness': 'polite'
+                'politeness': 'polite',
+                'status': 'active'
             }
             kwargs.update(static_params)
             sql, parameters = self.format_args_add_user(sql, parameters=kwargs)
@@ -136,7 +66,7 @@ class Database:
             print('Not enough data to create user')
         except asyncpg.exceptions.UniqueViolationError:
             print('duplicate key value violates unique constraint in table')
-            user = await self.select_user(id=kwargs['id'])
+            user = await self.select_row(id=kwargs['id'])
             if user is None:
                 print('adding new to name')
                 kwargs['name'] = kwargs['name'] + 'New'
@@ -146,25 +76,12 @@ class Database:
                 print('User ' + kwargs['name'] + ' already exists.')
                 return user
 
-    async def select_all_users(self):
-        sql = "SELECT * FROM plank_schema.Users"
-        return await self.execute(sql, fetch=True)
-
-    async def select_user(self, table_name='Users', **kwargs):
-        sql = "SELECT * FROM plank_schema.Users WHERE "
-        sql, parameters = self.format_args_select_user(sql, parameters=kwargs)
-        return await self.execute(sql, *parameters, fetchrow=True)
-
-    async def count_users(self, table_name='Users'):
-        sql = "SELECT COUNT(*) FROM plank_schema.Users"
-        return await self.execute(sql, fetchval=True)
-
     async def check_if_user_exists(self, message=None, **kwargs):
         print('Checking if user exists')
         if message is not None:
-            user = await self.select_user(id=str(str(message.from_user.id)+str(message.chat.id)))
+            user = await self.select_row(id=str(str(message.from_user.id) + str(message.chat.id)))
         else:
-            user = await self.select_user(**kwargs)
+            user = await self.select_row(**kwargs)
 
         if user:
             print('User '+ user['name']+ ', exists')
@@ -177,19 +94,15 @@ class Database:
                                     chat_id=message.chat.id,
                                     name=message.from_user.first_name,
                                     full_name=message.from_user.full_name)
-                user = await self.select_user(id=str(str(message.from_user.id)+str(message.chat.id)))
+                user_new = await self.select_row(id=str(str(message.from_user.id) + str(message.chat.id)))
             else:
-                await self.add_user(**kwargs)
-            return user
+                user_new = await self.add_user(**kwargs)
+            return user_new
 
     async def update_name(self, name, user_id, chat_id, table_name='Users'):
         sql = "UPDATE plank_schema.Users SET name =$1 WHERE user_id=$2 AND chat_id=$3"
         return await self.execute(sql, name, user_id, chat_id, execute=True)
 
-    async def update_parameter(self, parameter, new_value, user_id, chat_id, table_name='Users'):
-        sql = "UPDATE plank_schema." + table_name + " SET " + parameter + " =$1 WHERE user_id=$2 AND chat_id=$3"
-        print(sql)
-        return await self.execute(sql, new_value, user_id, chat_id, execute=True)
 
 '''
 db = Database()

@@ -6,4 +6,7 @@ class MenuStates(StatesGroup):
     set_time_increase = State()
     set_days_increase = State()
     get_calendar_date = State()
+    set_new_name = State()
+    previous_date_stat = State()
+
 
