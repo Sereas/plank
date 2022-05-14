@@ -11,7 +11,6 @@ from aiogram_calendar import simple_cal_callback, SimpleCalendar
 
 
 async def get_calendar(callback: Union[CallbackQuery, Message]):
-    print('callbackquerry: ', callback.data.split(':')[1].strip())
     if callback.data.split(':')[1].strip() == 'next_increase':
         if isinstance(callback, Message):
             await callback.answer('Выбери дату: ',
@@ -20,6 +19,7 @@ async def get_calendar(callback: Union[CallbackQuery, Message]):
             await callback.message.edit_text('Выбери дату: ',
                                              reply_markup=await SimpleCalendar().start_calendar())
         await MenuStates.get_calendar_date.set()
+
     elif callback.data.split(':')[1].strip() == 'past_date_info':
         if isinstance(callback, Message):
             await callback.answer('Выбери дату: ',
@@ -35,9 +35,9 @@ async def get_calendar(callback: Union[CallbackQuery, Message]):
                            state=MenuStates.get_calendar_date)
 async def process_simple_calendar(callback_query: CallbackQuery, callback_data: dict, state: FSMContext):
     selected, date = await SimpleCalendar().process_selection(callback_query, callback_data)
-    today = datetime.today()
+    today = datetime.today().date()
     if selected:
-        if date > today:
+        if date.date() >= today:
             await db.update_parameter(parameter='increase_day',
                                       new_value=date,
                                       user_id=callback_query.from_user.id,

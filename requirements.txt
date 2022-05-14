@@ -2,3 +2,5 @@ aiogram<3.0
 environs~=8.0.0
 psycopg2~=2.9.1
 asyncpg
+apscheduler~=3.9.1
+aiogram_calendar~=0.1.1

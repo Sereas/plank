@@ -3,10 +3,17 @@ import logging
 
 from aiogram import executor
 
-from loader import dp, db, db_logs
+from handlers.groups.day_stats import get_day_stats, check_increases
+from loader import dp, db, db_logs, scheduler
 import middlewares, filters, handlers
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
+
+
+def set_scheduled_jobs(scheduler):
+    # Добавляем задачи на выполнение
+    scheduler.add_job(get_day_stats, "cron", day_of_week='mon-sun', hour=5, minute=0, timezone='Europe/Moscow')
+    scheduler.add_job(check_increases, "cron", day_of_week='mon-sun', hour=5, minute=5, timezone='Europe/Moscow')
 
 
 async def on_startup(dispatcher):
@@ -22,8 +29,12 @@ async def on_startup(dispatcher):
     # Уведомляет про запуск
     await on_startup_notify(dispatcher)
 
+    # запускает задачи по времени
+    set_scheduled_jobs(scheduler)
+
 
 if __name__ == '__main__':
+    scheduler.start()
     executor.start_polling(dp, on_startup=on_startup)
 
 

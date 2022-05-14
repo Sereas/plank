@@ -6,6 +6,7 @@ import logging
 from data import config
 from utils.db_api.users_db import DatabaseUsers
 from utils.db_api.logs_db import DatabaseLogs
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 loop = asyncio.get_event_loop()
 logging.basicConfig(format=u'%(filename)s [LINE:%(lineno)d] #%(levelname)-8s [%(asctime)s]  %(message)s',
@@ -18,3 +19,4 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 db = DatabaseUsers()
 db_logs = DatabaseLogs()
+scheduler = AsyncIOScheduler()

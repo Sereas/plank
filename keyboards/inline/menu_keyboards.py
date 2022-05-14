@@ -103,7 +103,7 @@ async def change_politeness_keyboard():
 
 async def names_tag_planked_keyboard(chat_id):
     markup = InlineKeyboardMarkup(row_width=2)
-    user_names = await get_names(chat_id=chat_id)
+    user_names = await get_names(chat_id=chat_id, status='active')
     callback_data, button_text = [],[]
     for user in user_names:
         callback_data.append(make_callback_data(level='name_chosen', name=user))
