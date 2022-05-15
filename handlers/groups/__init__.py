@@ -9,5 +9,5 @@ from . import set_politeness_event
 from . import tag_friend_event
 from . import menu
 from . import get_all_users_name
-from . import testing
+#from . import testing
 
