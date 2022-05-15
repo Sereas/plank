@@ -1,3 +1,5 @@
+import asyncio
+import pandas as pd
 import datetime
 from datetime import timedelta
 import asyncpg
@@ -11,7 +13,7 @@ class DatabaseUsers(Database):
         sql = """
         CREATE TABLE IF NOT EXISTS plank_schema.Users(
         id VARCHAR(255) NOT NULL UNIQUE,
-        name VARCHAR(255) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
         full_name VARCHAR(255) NULL,
         chat_id BIGINT NOT NULL,
         user_id BIGINT NOT NULL,
@@ -24,7 +26,8 @@ class DatabaseUsers(Database):
         planked_today BOOLEAN NOT NULL,
         vacation BOOLEAN NOT NULL,
         politeness VARCHAR(255) NOT NULL,
-        status VARCHAR(255) NOT NULL
+        status VARCHAR(255) NOT NULL,
+        language VARCHAR(255) NOT NULL
         );
         """
         await self.execute(sql, execute=True)
@@ -55,7 +58,8 @@ class DatabaseUsers(Database):
                 'planked_today': False,
                 'vacation': False,
                 'politeness': 'polite',
-                'status': 'active'
+                'status': 'active',
+                'language': 'ru'
             }
             kwargs.update(static_params)
             sql, parameters = self.format_args_add_user(sql, parameters=kwargs)
@@ -103,36 +107,62 @@ class DatabaseUsers(Database):
         sql = "UPDATE plank_schema.Users SET name =$1 WHERE user_id=$2 AND chat_id=$3"
         return await self.execute(sql, name, user_id, chat_id, execute=True)
 
-
 '''
-db = Database()
+db = DatabaseUsers()
 loop = asyncio.get_event_loop()
 
-
 #loop.run_until_complete(db.create_connection())
-loop.run_until_complete(db.create_table_users())
 
+loop.run_until_complete(db.create_table_users())
+names = [149948231, 317396752, 479075524, 315906676, 217148052]
+loop.run_until_complete(db.update_parameter(parameter='vacation', new_value=True, user_id=154642450, chat_id=-1001141146206))
 
 async def add_users():
+    users_db_path = '/Users/18356995/Downloads/users_db.h5'
+    users_df = pd.read_hdf(users_db_path, key='df')
+    list_of_users = users_df.values.tolist()
+    print(users_df.values.tolist())
+    users_to_add = []
+    for user in list_of_users:
+        user_to_add = (str(str(user[1]) + str(user[0])),
+                       user[2],
+                       user[2],
+                       int(str(user[0])),
+                       int(str(user[1])),
+                       user[3],
+                       user[4],
+                       user[5],
+                       user[6],
+                       user[7])
+        users_to_add.append(user_to_add)
+
     users = [
         ('1472581131669', 'Olegg', 'DylevichOleg', 123, 4561),
         ('9876546111321', 'Kramm', 'Kram Kramovich', 123, 7411),
         ('1234567111689', 'Andreyy', 'Andrey Andreich', 123, 9613)
     ]
     list_of_db_users = []
-    for id, name, full_name, chat_id, user_id in users:
-        user = await db.add_user(id=id, name=name, full_name=full_name, chat_id=chat_id, user_id=user_id)
+    for id, name, full_name, chat_id, user_id, current__time, time_increase, increase_in_days, increase_day, times_missed in users_to_add:
+        user = await db.add_user(id=id,
+                                 name=name,
+                                 full_name=full_name,
+                                 chat_id=chat_id,
+                                 user_id=user_id,
+                                 current__time=current__time,
+                                 time_increase=time_increase,
+                                 increase_in_days=increase_in_days,
+                                 increase_day=increase_day,
+                                 times_missed=times_missed)
         list_of_db_users.append(user)
 
-#loop.run_until_complete(add_users())
+loop.run_until_complete(add_users())
 new_columns = {
     "test7": 'BIGINT'
 }
-loop.run_until_complete(db.count_users())
+#loop.run_until_complete(db.count_users())
 #oleg = loop.run_until_complete(db.select_user(**{'name':'Olegg'}))
-andrey = loop.run_until_complete(db.select_user(name='Andrey23'))
-oleg = loop.run_until_complete(db.check_if_user_exists(name='Olegg', id='98345634741654', chat_id=687, user_id=11))
-print(oleg)
+#andrey = loop.run_until_complete(db.select_user(name='Andrey23'))
+#oleg = loop.run_until_complete(db.check_if_user_exists(name='Olegg', id='98345634741654', chat_id=687, user_id=11))
+#print(oleg)
 #loop.run_until_complete(db.update_parameter(parameter='name', new_value='Андрей', user_id=oleg['user_id'], chat_id=oleg['chat_id']))
-
 '''
