@@ -91,3 +91,8 @@ class Database:
     async def get_unique_values(self, column, table_name='Users'):
         sql = "SELECT DISTINCT " + column + " FROM plank_schema." + table_name
         return await self.execute(sql, fetch=True)
+
+    async def delete_row(self, table_name='Users', **kwargs):
+        sql = "DELETE FROM plank_schema." + table_name + " WHERE "
+        sql, parameters = self.format_args_multiple_conditions(sql, parameters=kwargs)
+        return await self.execute(sql, *parameters, execute=True)

@@ -114,6 +114,8 @@ loop = asyncio.get_event_loop()
 #loop.run_until_complete(db.create_connection())
 
 loop.run_until_complete(db.create_table_users())
+loop.run_until_complete(db.delete_row(chat_id=-645333939))
+
 names = [149948231, 317396752, 479075524, 315906676, 217148052]
 loop.run_until_complete(db.update_parameter(parameter='vacation', new_value=True, user_id=154642450, chat_id=-1001141146206))
 

@@ -5,15 +5,15 @@ from aiogram.utils.exceptions import ChatNotFound
 from loader import db, db_logs, bot
 
 
-async def get_day_stats(check_date=(datetime.datetime.today().date() - datetime.timedelta(days=1))):
+async def get_day_stats(check_date=(datetime.datetime.today() - datetime.timedelta(days=1))):
     chats = await db.get_unique_values(column='chat_id')
     message_to_send = 'Дневная проверка активности за ' + str(check_date.strftime("%d %b %Y") + ':\n\n')
     for chat in chats:
         print('chat ', chat['chat_id'])
         users_in_chat = await db.select_all_rows_conditions(chat_id=chat['chat_id'])
-        users_in_logs = await db_logs.select_all_rows_conditions(table_name='Logs', chat_id=chat['chat_id'], check_date=check_date)
+        users_in_logs = await db_logs.select_all_rows_conditions(table_name='Logs', chat_id=chat['chat_id'], check_date=check_date.date())
         for user in users_in_chat:
-            if user['vacation'] is False and user['status'] == 'active' and user['date_joined'] <= check_date:
+            if user['vacation'] is False and user['status'] == 'active' and user['date_joined'].date() <= check_date.date():
                 if not any(dictionary['id'] == user['id'] for dictionary in users_in_logs):
                     message_to_send += user['name'] + ' - False \n'
                 else:
