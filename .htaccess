@@ -1,6 +1,8 @@
-# STRONG HTACCESS PROTECTION
-<Files ~ "^.*\.([Ee][Nn][Vv])">
- order allow,deny
- deny from all
- satisfy all
+# Disable Directory listing
+Options -Indexes
+
+# block files which needs to be hidden, specify .example extension of the file
+<Files ~ "\.(env|json|config.js|md|gitignore|gitattributes|lock)$">
+    Order allow,deny
+    Deny from all
 </Files>
