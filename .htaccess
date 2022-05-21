@@ -1,8 +1,8 @@
-# Disable Directory listing
+# Disable index view
 Options -Indexes
 
-# block files which needs to be hidden, specify .example extension of the file
-<Files ~ "\.(env|json|config.js|md|gitignore|gitattributes|lock)$">
+# Hide a specific file
+<Files .env>
     Order allow,deny
     Deny from all
 </Files>
