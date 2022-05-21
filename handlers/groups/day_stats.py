@@ -5,7 +5,9 @@ from aiogram.utils.exceptions import ChatNotFound
 from loader import db, db_logs, bot
 
 
-async def get_day_stats(check_date=(datetime.datetime.today() - datetime.timedelta(days=1))):
+async def get_day_stats(check_date=None):
+    if check_date is None:
+        check_date = (datetime.datetime.today() - datetime.timedelta(days=1))
     chats = await db.get_unique_values(column='chat_id')
     message_to_send = 'Дневная проверка активности за ' + str(check_date.strftime("%d %b %Y") + ':\n\n')
     for chat in chats:
