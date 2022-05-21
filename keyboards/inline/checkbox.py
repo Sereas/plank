@@ -152,7 +152,7 @@ async def tag_friend(call: CallbackQuery, names):
                     pass
 
                 await call.message.answer('Отлично! Отметил, что ' + friend['name'] + ' позанимался сегодня, '
-                                          + str(planked_date.strftime("%d/%m/%Y")))
+                                          + str(planked_date.strftime("%d %b %Y")))
     else:
         print('in false')
         await call.message.delete()
