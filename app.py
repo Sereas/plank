@@ -4,7 +4,7 @@ import logging
 from aiogram import executor
 
 from handlers.groups.day_stats import get_day_stats, check_increases
-from loader import dp, db, db_logs, scheduler
+from loader import dp, db, db_logs, scheduler, db_buffs
 import middlewares, filters, handlers
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
@@ -21,6 +21,7 @@ async def on_startup(dispatcher):
     logging.info('Запускаем таблицу пользователей')
     await db.create_table_users()
     await db_logs.create_table_logs()
+    await db_buffs.create_table_buffs()
     logging.info('Готово')
 
     # Устанавливает команды

@@ -20,8 +20,6 @@ async def get_day_stats(check_date=None):
                     message_to_send += user['name'] + ' - False \n'
                 else:
                     message_to_send += user['name'] + ' - True \n'
-                #planked = await db_logs.check_planked_today(id=user['id'], check_date=check_date)
-                #message_to_send += user['name'] + ' - ' + str(planked) + '\n'
         try:
             await bot.send_message(chat_id=chat['chat_id'], text=message_to_send)
         except ChatNotFound:

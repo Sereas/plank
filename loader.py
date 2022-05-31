@@ -4,6 +4,7 @@ import asyncio
 import logging
 
 from data import config
+from utils.db_api.buffs_db import DatabaseBuffs
 from utils.db_api.users_db import DatabaseUsers
 from utils.db_api.logs_db import DatabaseLogs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -19,4 +20,5 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 db = DatabaseUsers()
 db_logs = DatabaseLogs()
+db_buffs = DatabaseBuffs()
 scheduler = AsyncIOScheduler()

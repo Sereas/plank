@@ -8,5 +8,6 @@ class MenuStates(StatesGroup):
     get_calendar_date = State()
     set_new_name = State()
     previous_date_stat = State()
+    clean_state = State()
 
 

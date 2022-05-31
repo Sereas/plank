@@ -18,6 +18,7 @@ from handlers.groups.set_time_increase_event import get_time_increase
 from handlers.groups.show_stats_event import show_my_stats
 from handlers.groups.tag_friend_event import tag_friend
 from handlers.groups.vacation_event import change_vacation_status
+from keyboards.inline.buffs_keyboard import show_buffs_keyboard
 from keyboards.inline.checkbox import names_tag_planked_checkbox, get_checked_users
 from keyboards.inline.menu_keyboards import main_menu_keyboard, change_parameters_keyboard, menu_cd, \
     change_politeness_keyboard, names_tag_planked_keyboard, admin_cd, names_missed_day_keyboard
@@ -49,7 +50,6 @@ async def list_parameters(callback: CallbackQuery):
 
 
 async def names_to_tag(callback: CallbackQuery):
-    #markup = await names_tag_planked_keyboard(chat_id=callback.message.chat.id)
     markup = await names_tag_planked_checkbox(chat_id=callback.message.chat.id)
     await callback.message.edit_reply_markup(markup)
 
@@ -57,6 +57,12 @@ async def names_to_tag(callback: CallbackQuery):
 async def names_missed_day(callback: CallbackQuery):
     markup = await names_missed_day_keyboard(chat_id=callback.message.chat.id, callback=callback)
     await callback.message.edit_reply_markup(markup)
+
+async def show_buffs(callback: CallbackQuery):
+    await callback.message.delete()
+    markup = await show_buffs_keyboard()
+    await callback.message.answer(markdown.pre('   --Меню бота:--   '), parse_mode=ParseMode.MARKDOWN_V2, reply_markup=markup)
+
 
 
 @dp.callback_query_handler(menu_cd.filter())
@@ -80,7 +86,8 @@ async def navigate(call: CallbackQuery, callback_data: dict):
         "name_chosen": tag_friend,
         "past_date_info": show_past_date_info,
         "show_all_misses": show_all_misses,
-        "get_checked_users": get_checked_users
+        "get_checked_users": get_checked_users,
+        "show_buffs": show_buffs
     }
     current_level_function = levels[current_level]
     await current_level_function(call)

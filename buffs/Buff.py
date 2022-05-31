@@ -1,5 +1,7 @@
 import datetime
 
+from loader import db_buffs
+
 
 class Buff:
     def __init__(self, **kwargs):
@@ -51,4 +53,40 @@ class Buff:
 
     async def load_existing_buff(self, id):
         self.id = id
+        existing_buff = await db_buffs.select_row(table_name='Buffs',
+                                                  id=self.id,
+                                                  is_active=True)
+        if existing_buff is not None:
+            self.buff_id = existing_buff['buff_id']
+            self.name = existing_buff['name']
+            self.code = existing_buff['code']
+            self.date_buff_started = existing_buff['date_buff_started']
+            self.date_buff_ended = existing_buff['date_buff_ended']
+            self.reason_buff_ended = existing_buff['reason_buff_ended']
+            self.is_active = existing_buff['is_active']
+        else:
+            print('This user does not have active buffs')
 
+    async def describe(self):
+        pass
+
+    async def activate(self, id):
+        await db_buffs.add_buff(id=id,
+                                name=self.name,
+                                code=self.code,
+                                date_buff_started=self.date_buff_started,
+                                is_active=True)
+
+    async def cancel(self, date_buff_ended, reason_buff_ended):
+        await db_buffs.update_buff(parameter='is_active',
+                                   new_value=False,
+                                   id=self.id,
+                                   buff_id=self.buff_id)
+        await db_buffs.update_buff(parameter='date_buff_ended',
+                                   new_value=date_buff_ended,
+                                   id=self.id,
+                                   buff_id=self.buff_id)
+        await db_buffs.update_buff(parameter='reason_buff_ended',
+                                   new_value=reason_buff_ended,
+                                   id=self.id,
+                                   buff_id=self.buff_id)

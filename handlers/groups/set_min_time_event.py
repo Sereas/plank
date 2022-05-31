@@ -1,6 +1,7 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from filters import ToughGuyFilter
 from loader import db, dp
 from states import MenuStates
 
@@ -12,7 +13,7 @@ async def get_min_time(callback: CallbackQuery):
     await MenuStates.set_min_time.set()
 
 
-@dp.message_handler(state=MenuStates.set_min_time)
+@dp.message_handler(ToughGuyFilter(), state=MenuStates.set_min_time)
 async def set_min_time(message: Message, state: FSMContext):
     answer = message.text
     try:

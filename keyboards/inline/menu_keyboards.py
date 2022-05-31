@@ -26,7 +26,8 @@ async def main_menu_keyboard():
         make_admin_callback_data(level='add_missed_day'),
         make_callback_data(level='past_date_info'),
         make_callback_data(level='show_all_misses'),
-        make_admin_callback_data(level='clear_misses')
+        make_admin_callback_data(level='clear_misses'),
+        make_callback_data(level='show_buffs')
     ]
     button_text = [
         'Отметить друга',  # level tag_friend
@@ -35,7 +36,8 @@ async def main_menu_keyboard():
         'Добавить пропуск',  # level add_missed_day
         'Данные за прошлые даты',  # level past_date_info
         'Показать все пропуски',  # level show_all_misses
-        'Убрать пропуски'  # level 70
+        'Убрать пропуски',  # level clear_misses
+        'Использовать бафф'  # level show_buffs
     ]
     for button, callback in zip(button_text, callback_data):
         markup.insert(
