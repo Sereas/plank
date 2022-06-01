@@ -70,6 +70,9 @@ class Buff:
     async def describe(self):
         pass
 
+    async def buff_action(self, **kwargs):
+        pass
+
     async def activate(self, id):
         await db_buffs.add_buff(id=id,
                                 name=self.name,
@@ -90,3 +93,25 @@ class Buff:
                                    new_value=reason_buff_ended,
                                    id=self.id,
                                    buff_id=self.buff_id)
+
+    async def is_expired(self):
+        expiration_date = (self.date_buff_started + datetime.timedelta(days=self.duration)).date()
+        today = datetime.datetime.today().date()
+        days_left = (expiration_date - today).days
+        if today > expiration_date:
+            expired = True
+            await db_buffs.update_buff(parameter='is_active',
+                                       new_value=False,
+                                       id=self.id,
+                                       buff_id=self.buff_id)
+            await db_buffs.update_buff(parameter='date_buff_ended',
+                                       new_value=today,
+                                       id=self.id,
+                                       buff_id=self.buff_id)
+            await db_buffs.update_buff(parameter='reason_buff_ended',
+                                       new_value='expired',
+                                       id=self.id,
+                                       buff_id=self.buff_id)
+        else:
+            expired = False
+        return expired, days_left

@@ -23,7 +23,7 @@ class DatabaseUsers(Database):
         increase_day TIMESTAMP NOT NULL,
         date_joined TIMESTAMP NOT NULL,
         times_missed INT NOT NULL,
-        planked_today BOOLEAN NOT NULL,
+        free_skips INT NOT NULL,
         vacation BOOLEAN NOT NULL,
         politeness VARCHAR(255) NOT NULL,
         status VARCHAR(255) NOT NULL,
@@ -55,8 +55,8 @@ class DatabaseUsers(Database):
                 'increase_day': datetime.datetime.today().date() + timedelta(days=14),
                 'date_joined': datetime.datetime.today().date(),
                 'times_missed': 0,
-                'planked_today': False,
                 'vacation': False,
+                'free_skips': 0,
                 'politeness': 'polite',
                 'status': 'active',
                 'language': 'ru'

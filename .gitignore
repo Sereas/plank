@@ -1,3 +1,4 @@
 .idea/*
 testing.py
 .env
+db_manipulation.py

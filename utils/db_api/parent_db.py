@@ -96,3 +96,7 @@ class Database:
         sql = "DELETE FROM plank_schema." + table_name + " WHERE "
         sql, parameters = self.format_args_multiple_conditions(sql, parameters=kwargs)
         return await self.execute(sql, *parameters, execute=True)
+
+    async def delete_column(self, column, table_name='Users'):
+        sql = "ALTER TABLE plank_schema." + table_name + " DROP COLUMN " + column
+        return await self.execute(sql, execute=True)

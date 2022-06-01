@@ -38,6 +38,11 @@ async def get_description(buff_to_describe, call):
     buff = await initialize_buff(buff_to_describe)  # initialized empty buff
     description = await buff.describe()
     await buff.load_existing_buff((str(call.from_user.id) + str(call.message.chat.id)))
+    if buff.is_active and buff_to_describe == buff.code:
+        expired, days_left = await buff.is_expired()
+        description += '\n' \
+                       '\n' \
+                       'У тебя уже активирован этот бафф и он будет действовать еще ' + str(days_left) + ' дней.'
 
     markup = await description_buff_keyboard(buff=buff, buff_to_describe=buff_to_describe)
     await call.message.answer(description, reply_markup=markup)

@@ -3,7 +3,7 @@ import logging
 
 from aiogram import executor
 
-from handlers.groups.day_stats import get_day_stats, check_increases
+from handlers.groups.day_stats import get_day_stats, check_increases, eod_check_buffs_impact
 from loader import dp, db, db_logs, scheduler, db_buffs
 import middlewares, filters, handlers
 from utils.notify_admins import on_startup_notify
@@ -13,6 +13,7 @@ from utils.set_bot_commands import set_default_commands
 def set_scheduled_jobs(scheduler):
     # Добавляем задачи на выполнение
     scheduler.add_job(get_day_stats, "cron", day_of_week='mon-sun', hour=5, minute=0, timezone='Europe/Moscow')
+    scheduler.add_job(eod_check_buffs_impact, "cron", day_of_week='mon-sun', hour=13, minute=5, timezone='Europe/Moscow')
     scheduler.add_job(check_increases, "cron", day_of_week='mon-sun', hour=5, minute=5, timezone='Europe/Moscow')
 
 

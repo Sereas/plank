@@ -2,7 +2,8 @@ import datetime
 
 from aiogram.utils.exceptions import ChatNotFound
 
-from loader import db, db_logs, bot
+from buffs.all_buffs import initialize_buff
+from loader import db, db_logs, bot, db_buffs
 
 
 async def get_day_stats(check_date=None):
@@ -51,3 +52,19 @@ async def check_increases():
                     await bot.send_message(chat_id=chat['chat_id'], text=message_to_send)
                 except ChatNotFound:
                     print('Such chat does not exist anymore.')
+
+
+async def eod_check_buffs_impact():
+    print('checking buffs')
+    eod_check_buffs = ['tough_guy']
+    all_active_buffs = await db_buffs.select_all_rows_conditions(table_name='Buffs', is_active=True)
+    if len(all_active_buffs) == 0:
+        print('Nobody has active buffs')
+    else:
+        for buff in all_active_buffs:
+            buff_to_check = await initialize_buff(buff_code=buff['code'])
+            await buff_to_check.load_existing_buff(id=buff['id'])
+            if buff_to_check.code in eod_check_buffs:
+                await buff_to_check.buff_action()
+            else:
+                print('This buff ' + buff_to_check.name + ' is not for eod check.')

@@ -1,11 +1,9 @@
 from typing import Union
-
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import BoundFilter
 from aiogram.types import Message, CallbackQuery
 
-from loader import db_buffs, storage, dp
-from states import MenuStates
+from loader import db_buffs, storage
+
 
 
 class ToughGuyFilter(BoundFilter):
