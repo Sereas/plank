@@ -51,9 +51,9 @@ async def new_member(message: types.Message):
 @dp.message_handler(content_types=types.ContentType.LEFT_CHAT_MEMBER)
 async def leaver(message: types.Message):
     user = await db.select_row(id=str(str(message.left_chat_member.id) + str(message.chat.id)))
-    number_of_misses = user['times_missed']
+    total_debt = user['total_debt']
     await message.answer('Looks like we have a leaver... It is a shame, but everyone walks his own path. \n'
-                         'User ' + message.left_chat_member.full_name + ' currently has ' + str(number_of_misses) + ' misses.')
+                         'User ' + message.left_chat_member.full_name + ' currently has ' + str(total_debt) + ' rubles debt.')
     await db.update_parameter(parameter='status', new_value='inactive',
                               user_id=message.left_chat_member.id,
                               chat_id=message.chat.id)

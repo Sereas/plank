@@ -26,17 +26,19 @@ class ToughGuyBuff(Buff):
                                       new_value=new_time,
                                       user_id=user['user_id'],
                                       chat_id=user['chat_id'])
+
             await bot.send_message(chat_id=user['chat_id'],
                                    text='Поздравляю, ' + user['name'] + '! В результате действия '
                                          'баффа "' + self.name + '" твое время увеличилось и теперь составляет ' + str(new_time) + ' секунд. \n'
                                          'Продолжай в том же духе, осталось всего ' + str(days_left) + ' дней!')
         else:
-            await bot.send_message(chat_id=user['chat_id'],
-                                   text='Поздравляю, ' + user['name'] + '! Ты уверенно справился с испытанием '
-                                        + self.name + ' и заслужил право на 1 день отдыха!')
             current_free_skips = user['free_skips']
             current_free_skips += 1
             await db.update_parameter(parameter='free_skips',
                                       new_value=current_free_skips,
                                       user_id=user['user_id'],
                                       chat_id=user['chat_id'])
+
+            await bot.send_message(chat_id=user['chat_id'],
+                                   text='Поздравляю, ' + user['name'] + '! Ты уверенно справился с испытанием '
+                                        + self.name + ' и заслужил право на 1 день отдыха!')

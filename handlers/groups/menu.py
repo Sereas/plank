@@ -17,6 +17,7 @@ from handlers.groups.set_politeness_event import set_kind_politeness, set_rude_p
 from handlers.groups.set_time_increase_event import get_time_increase
 from handlers.groups.show_stats_event import show_my_stats
 from handlers.groups.tag_friend_event import tag_friend
+from handlers.groups.use_free_skip import use_free_skip
 from handlers.groups.vacation_event import change_vacation_status
 from keyboards.inline.buffs_keyboard import show_buffs_keyboard
 from keyboards.inline.checkbox import names_tag_planked_checkbox, get_checked_users
@@ -87,7 +88,8 @@ async def navigate(call: CallbackQuery, callback_data: dict):
         "past_date_info": show_past_date_info,
         "show_all_misses": show_all_misses,
         "get_checked_users": get_checked_users,
-        "show_buffs": show_buffs
+        "show_buffs": show_buffs,
+        "use_free_skip": use_free_skip,
     }
     current_level_function = levels[current_level]
     await current_level_function(call)

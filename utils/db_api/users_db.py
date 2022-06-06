@@ -22,7 +22,8 @@ class DatabaseUsers(Database):
         increase_in_days INT NOT NULL,
         increase_day TIMESTAMP NOT NULL,
         date_joined TIMESTAMP NOT NULL,
-        times_missed INT NOT NULL,
+        total_debt INT NOT NULL,
+        next_payment_amount INT NOT NULL,
         free_skips INT NOT NULL,
         vacation BOOLEAN NOT NULL,
         politeness VARCHAR(255) NOT NULL,
@@ -54,7 +55,8 @@ class DatabaseUsers(Database):
                 'increase_in_days': 14,
                 'increase_day': datetime.datetime.today().date() + timedelta(days=14),
                 'date_joined': datetime.datetime.today().date(),
-                'times_missed': 0,
+                'total_debt': 0,
+                'next_payment_amount': 1000,
                 'vacation': False,
                 'free_skips': 0,
                 'politeness': 'polite',
@@ -144,7 +146,7 @@ async def add_users():
         ('1234567111689', 'Andreyy', 'Andrey Andreich', 123, 9613)
     ]
     list_of_db_users = []
-    for id, name, full_name, chat_id, user_id, current__time, time_increase, increase_in_days, increase_day, times_missed in users_to_add:
+    for id, name, full_name, chat_id, user_id, current__time, time_increase, increase_in_days, increase_day, total_debt in users_to_add:
         user = await db.add_user(id=id,
                                  name=name,
                                  full_name=full_name,
@@ -154,7 +156,7 @@ async def add_users():
                                  time_increase=time_increase,
                                  increase_in_days=increase_in_days,
                                  increase_day=increase_day,
-                                 times_missed=times_missed)
+                                 total_debt=total_debt)
         list_of_db_users.append(user)
 
 loop.run_until_complete(add_users())

@@ -1,6 +1,6 @@
 import datetime
 
-from aiogram.utils.exceptions import ChatNotFound
+from aiogram.utils.exceptions import ChatNotFound, BotBlocked
 
 from buffs.all_buffs import initialize_buff
 from loader import db, db_logs, bot, db_buffs
@@ -25,6 +25,8 @@ async def get_day_stats(check_date=None):
             await bot.send_message(chat_id=chat['chat_id'], text=message_to_send)
         except ChatNotFound:
             print('Such chat does not exist anymore.')
+        except BotBlocked:
+            print('User ' + user['name'] + ' has blocked the bot.')
 
 
 async def check_increases():
@@ -52,6 +54,8 @@ async def check_increases():
                     await bot.send_message(chat_id=chat['chat_id'], text=message_to_send)
                 except ChatNotFound:
                     print('Such chat does not exist anymore.')
+                except BotBlocked:
+                    print('User ' + user['name'] + ' has blocked the bot.')
 
 
 async def eod_check_buffs_impact():

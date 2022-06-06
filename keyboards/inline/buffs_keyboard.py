@@ -4,6 +4,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQu
 from aiogram.utils.callback_data import CallbackData
 
 from buffs.all_buffs import get_all_buffs, initialize_buff
+from keyboards.inline.buff_specific_buttons.LuckyGuyButtons import lucky_guy_buttons
 from keyboards.inline.menu_keyboards import make_callback_data
 from loader import dp, db_buffs
 
@@ -49,12 +50,17 @@ async def get_description(buff_to_describe, call):
 
 
 async def description_buff_keyboard(buff, buff_to_describe):
-    markup = InlineKeyboardMarkup(row_width=2)
+    markup = InlineKeyboardMarkup(row_width=1)
     if buff.is_active and buff_to_describe == buff.code:
         markup.insert(InlineKeyboardButton(
             text='Отменить бафф',
             callback_data=make_buff_callback_data(level='cancel_buff_' + buff.code)
         ))
+        # Здесь будут создаваться специфичные кнопки для активного бафа (если они есть)
+        if buff_to_describe == 'lucky_guy':
+            buttons = await lucky_guy_buttons()
+            for button in buttons:
+                markup.insert(button)
     else:
         markup.insert(InlineKeyboardButton(
             text='Активировать',

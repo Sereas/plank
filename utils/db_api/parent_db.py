@@ -100,3 +100,7 @@ class Database:
     async def delete_column(self, column, table_name='Users'):
         sql = "ALTER TABLE plank_schema." + table_name + " DROP COLUMN " + column
         return await self.execute(sql, execute=True)
+
+    async def rename_column(self, old_column, new_column, table_name='Users'):
+        sql = "ALTER TABLE plank_schema." + table_name + " RENAME COLUMN " + old_column + " TO " + new_column
+        return await self.execute(sql, execute=True)
