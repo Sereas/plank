@@ -21,12 +21,12 @@ async def get_day_stats(check_date=None):
                     message_to_send += user['name'] + ' - False \n'
                 else:
                     message_to_send += user['name'] + ' - True \n'
-        try:
-            await bot.send_message(chat_id=chat['chat_id'], text=message_to_send)
-        except ChatNotFound:
-            print('Such chat does not exist anymore.')
-        except BotBlocked:
-            print('User ' + user['name'] + ' has blocked the bot.')
+            try:
+                await bot.send_message(chat_id=chat['chat_id'], text=message_to_send)
+            except ChatNotFound:
+                print('Such chat does not exist anymore.')
+            except BotBlocked:
+                print('User ' + user['name'] + ' has blocked the bot.')
 
 
 async def check_increases():
