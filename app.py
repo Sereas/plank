@@ -13,7 +13,9 @@ from utils.set_bot_commands import set_default_commands
 def set_scheduled_jobs(scheduler):
     # Добавляем задачи на выполнение
     scheduler.add_job(get_day_stats, "cron", day_of_week='mon-sun', hour=5, minute=0, timezone='Europe/Moscow')
-    scheduler.add_job(eod_check_buffs_impact, "cron", day_of_week='mon-sun', hour=5, minute=5, timezone='Europe/Moscow')
+    scheduler.add_job(eod_check_buffs_impact, "cron", day_of_week='mon-sun', hour=11, minute=53, timezone='Europe/Moscow')
+    scheduler.add_job(eod_check_buffs_impact, "cron", day_of_week='mon-sun', hour=11, minute=25,
+                      timezone='Europe/Moscow')
     scheduler.add_job(check_increases, "cron", day_of_week='mon-sun', hour=5, minute=10, timezone='Europe/Moscow')
 
 

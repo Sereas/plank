@@ -73,6 +73,10 @@ class Buff:
     async def buff_action(self, **kwargs):
         pass
 
+    async def on_start(self, **kwargs):
+        print('No immediate action')
+        pass
+
     async def activate(self, id):
         await db_buffs.add_buff(id=id,
                                 name=self.name,

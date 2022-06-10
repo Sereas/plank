@@ -61,7 +61,7 @@ async def check_increases():
 
 async def eod_check_buffs_impact():
     print('checking buffs')
-    eod_check_buffs = ['tough_guy']
+    eod_check_buffs = ['tough_guy', 'lucky_guy']
     all_active_buffs = await db_buffs.select_all_rows_conditions(table_name='Buffs', is_active=True)
     if len(all_active_buffs) == 0:
         print('Nobody has active buffs')

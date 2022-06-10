@@ -104,3 +104,14 @@ class Database:
     async def rename_column(self, old_column, new_column, table_name='Users'):
         sql = "ALTER TABLE plank_schema." + table_name + " RENAME COLUMN " + old_column + " TO " + new_column
         return await self.execute(sql, execute=True)
+
+    async def set_primary_key(self, column, table_name='Users'):
+        sql = "ALTER TABLE plank_schema." + table_name + " ADD PRIMARY KEY (" + column + ")"
+        return await self.execute(sql, execute=True)
+
+    async def set_foreign_key(self, column, parent_table_name='Users', child_table_name='Users'):
+        sql = "ALTER TABLE plank_schema." + child_table_name + " ADD FOREIGN KEY (" + column + ") REFERENCES plank_schema." + parent_table_name + "(" + column + ")"
+        print(sql)
+        return await self.execute(sql, execute=True)
+
+

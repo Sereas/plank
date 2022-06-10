@@ -1,5 +1,4 @@
 from buffs.LuckyGuyBuff import LuckyGuyBuff
-from buffs.TestBuff import TestBuff
 from buffs.ToughGuyBuff import ToughGuyBuff
 
 
@@ -7,7 +6,6 @@ async def get_all_buffs():
     all_buffs = {
         'tough_guy': 'Рисковый парень',
         'lucky_guy': 'Счастливчик',
-        'test_buff': 'Test'
     }
     return all_buffs
 
@@ -17,6 +15,5 @@ async def initialize_buff(buff_code):
     all_buffs = {
         'tough_guy': ToughGuyBuff(code=buff_code, name=names[buff_code]),
         'lucky_guy': LuckyGuyBuff(code=buff_code, name=names[buff_code]),
-        'test_buff': TestBuff(code=buff_code, name=names[buff_code])
     }
     return all_buffs[buff_code]

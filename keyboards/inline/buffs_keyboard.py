@@ -32,7 +32,9 @@ async def process_buff(buff_to_process, call):
     else:
         buff = await initialize_buff(buff_to_process)
         await buff.activate(id=str(call.from_user.id) + str(call.message.chat.id))
+        await buff.load_existing_buff(id=str(call.from_user.id) + str(call.message.chat.id))
         await call.message.answer('Бафф '+ buff.name + ' активирован!')
+        await buff.on_start()
 
 
 async def get_description(buff_to_describe, call):
@@ -58,9 +60,14 @@ async def description_buff_keyboard(buff, buff_to_describe):
         ))
         # Здесь будут создаваться специфичные кнопки для активного бафа (если они есть)
         if buff_to_describe == 'lucky_guy':
-            buttons = await lucky_guy_buttons()
-            for button in buttons:
-                markup.insert(button)
+            accepted = await buff.get_state_accepted()
+            print('accepted: ', accepted)
+            if accepted == True or accepted == False:
+                print('You already chose today')
+            else:
+                buttons = await lucky_guy_buttons()
+                for button in buttons:
+                    markup.insert(button)
     else:
         markup.insert(InlineKeyboardButton(
             text='Активировать',
