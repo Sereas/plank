@@ -1,8 +1,8 @@
-from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup, Dice
 from aiogram.utils.callback_data import CallbackData
 
 from buffs.all_buffs import initialize_buff
-from loader import dp, db, storage
+from loader import dp, db, storage, bot
 
 lucky_guy_cd = CallbackData('lucky_guy_buff_buttons', 'level')
 
@@ -21,6 +21,8 @@ async def get_today_delta(callback: CallbackQuery):
         roll_god_attitude = 'не благосклоны'
 
     markup = await lucky_guy_yes_no_keyboard()
+    dice = await callback.message.answer_dice()
+    print('Dice roll: ', dice.dice.value)
     await callback.message.answer('Боги ролла к тебе сегодня ' + roll_god_attitude + '! \n'
                                      'Они предлагают тебе увеличить время на ' + str(today_delta) + '%\n'
                                       'Согласен?',
