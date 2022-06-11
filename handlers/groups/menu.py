@@ -34,7 +34,7 @@ async def show_menu(message: Message):
 async def list_categories(message: Union[Message, CallbackQuery], **kwargs):
     markup = await main_menu_keyboard()
     if isinstance(message, Message):
-        await message.answer(markdown.pre('   --Меню бота:--   '), parse_mode=ParseMode.MARKDOWN_V2,reply_markup=markup)
+        await message.answer(markdown.pre('   --Меню бота:--   '), parse_mode=ParseMode.MARKDOWN_V2, reply_markup=markup)
     elif isinstance(message, CallbackQuery):
         call = message
         await call.message.edit_reply_markup(markup)
