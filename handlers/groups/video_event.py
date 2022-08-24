@@ -1,8 +1,10 @@
 import datetime
-import io
+
 from aiogram import types
 from aiogram.types import Message
-
+import moviepy.editor as mp
+import speech_recognition as sr
+from aiogram.utils.exceptions import FileIsTooBig
 
 from loader import dp, db, db_logs
 
@@ -30,6 +32,9 @@ async def receive_video(message: Message):
             await message.answer('Ура! Поздравляю с очередным продуктивным днем, ' +
                                  message.from_user.get_mention() + ', ' + str(planked_date.strftime("%d %b %Y")))
 
+    result = await save_video(message)
+    await message.answer('Я хочу пробовать что-то новое, поэтому решил стараться тебя понимать! Ты сказал: \n "' + result + '"')
+
 
 async def check_length(user_min_time, video_length):
     if video_length < user_min_time:
@@ -49,6 +54,32 @@ async def get_planked_date(message: Message):
 
 async def save_video(message: Message):
     video = message.video
-    file_in_io = io.BytesIO()
-    filename = await video.download(destination_file=file_in_io)
-    print(file_in_io)
+    video_path = 'videos/test.mov'
+    audio_path = 'videos/audio_test.wav'
+    try:
+        await video.download(destination_file=video_path)
+
+        clip = mp.VideoFileClip(video_path)
+        clip.audio.write_audiofile(audio_path)
+
+        result = await recognize_speech()
+        return result
+
+    except FileIsTooBig:
+        print('File too big')
+        result = 'Прости, твой файл слишком тяжелый и мне лень в нем разбираться =)'
+        return result
+
+
+
+async def recognize_speech():
+    recognizer = sr.Recognizer()
+    audio = sr.AudioFile("videos/audio_test.wav")
+    print('trying to recognize speech')
+    with audio as source:
+        audio_file = recognizer.record(source)
+    result = recognizer.recognize_google(audio_file, language='ru')
+
+    return result
+
+
