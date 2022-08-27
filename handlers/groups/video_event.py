@@ -32,8 +32,8 @@ async def receive_video(message: Message):
             await message.answer('Ура! Поздравляю с очередным продуктивным днем, ' +
                                  message.from_user.get_mention() + ', ' + str(planked_date.strftime("%d %b %Y")))
 
-    result = await save_video(message)
-    await message.answer('Я хочу пробовать что-то новое, поэтому решил стараться тебя понимать! Ты сказал: \n "' + result + '"')
+    '''result = await save_video(message)
+    await message.answer('Я хочу пробовать что-то новое, поэтому решил стараться тебя понимать! Ты сказал: \n "' + result + '"')'''
 
 
 async def check_length(user_min_time, video_length):
@@ -54,8 +54,10 @@ async def get_planked_date(message: Message):
 
 async def save_video(message: Message):
     video = message.video
+
     video_path = 'videos/test.mov'
     audio_path = 'videos/audio_test.wav'
+
     try:
         await video.download(destination_file=video_path)
 
@@ -71,15 +73,26 @@ async def save_video(message: Message):
         return result
 
 
-
 async def recognize_speech():
     recognizer = sr.Recognizer()
     audio = sr.AudioFile("videos/audio_test.wav")
     print('trying to recognize speech')
     with audio as source:
         audio_file = recognizer.record(source)
-    result = recognizer.recognize_google(audio_file, language='ru')
 
-    return result
+    try:
+        result = recognizer.recognize_google(audio_file, language='ru-RU')
+        print(result)
+
+        with open('videos/recognized.txt', mode='w') as file:
+            file.write("Recognized Speech:")
+            file.write("\n")
+            file.write(result)
+            print("ready!")
+
+        return result
+    except:
+        result = 'Такое ощущение, что ты молчишь на видео!'
+        return result
 
 
