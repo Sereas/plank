@@ -119,3 +119,11 @@ class Buff:
         else:
             expired = False
         return expired, days_left
+
+    async def sick_while_buff(self):
+        new_date_started = (self.date_buff_started + datetime.timedelta(days=1)).date()
+        await db_buffs.update_buff(parameter='date_buff_started',
+                                   new_value=new_date_started,
+                                   id=self.id,
+                                   buff_id=self.buff_id)
+

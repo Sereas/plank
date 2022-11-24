@@ -61,7 +61,7 @@ async def change_parameters_keyboard():
         make_callback_data(level='change_politeness')
     ]
     button_text = [
-        'Взять перерыв',  # level take_vacation
+        'Взять/прекрать перерыв',  # level take_vacation
         'Задать минимальное время',  # level set_min_time
         'Задать увеличение времени',  # level set_increase_time
         'Задать частоту увеличений',  # level set_days_increase

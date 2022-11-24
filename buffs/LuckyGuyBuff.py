@@ -25,69 +25,83 @@ class LuckyGuyBuff(Buff):
 
     async def on_start(self):
         user = await db.check_if_user_exists(id=self.id)
+        mention = "[" + user['name'] + "](tg://user?id=" + str(user['user_id']) + ")"
         today_time = await self.today_time()
         if today_time <= 40:
             roll_god_attitude = 'благосклоны'
         else:
             roll_god_attitude = 'не благосклоны'
         await bot.send_message(chat_id=user['chat_id'],
-                               text='Боги ролла к тебе сегодня ' + roll_god_attitude + ', ' + user['name'] + '! \n'
+                               text='Боги ролла к тебе сегодня ' + roll_god_attitude + ', ' + mention + '! \n'
                                      'Они предлагают тебе увеличить время на ' + str(
                                      today_time) + '%\n'
                                      'Ты можешь согласиться или отказаться в "Использовать бафф" ==> "Счастливчик" ==> "Изменение времени на сегодня" \n'
-                                     'Напоминаю, что бездействие равно отказу.')
+                                     'Напоминаю, что бездействие равно отказу.',
+                               parse_mode="Markdown")
 
     async def buff_action(self, **kwargs):
         expired, days_left = await self.is_expired()
         user = await db.check_if_user_exists(id=self.id)
+        mention = "[" + user['name'] + "](tg://user?id=" + str(user['user_id']) + ")"
         today = datetime.datetime.today()
         if not expired:
-            accepted = await self.get_state_accepted()
-            if accepted:
-                base_time = await self.get_state_base_time()
-                await db.update_parameter(parameter='current__time',
-                                          new_value=base_time,
-                                          user_id=user['user_id'],
-                                          chat_id=user['chat_id'])
-
-                new_payment = user['next_payment_amount'] - self.money_delta
-                await db.update_parameter(parameter='next_payment_amount',
-                                          new_value=new_payment,
-                                          user_id=user['user_id'],
-                                          chat_id=user['chat_id'])
-
+            if user['vacation']:
+                await self.sick_while_buff()
                 await bot.send_message(chat_id=user['chat_id'],
-                                       text='Поздравляю, ' + user['name'] + ', с еще одним успешным днем в баффе!'
-                                             ' Вернул твое базовое время в ' + str(base_time) + ' секунд и уменьшил'
-                                             ' твой следующий платеж до ' + str(new_payment) + ' рублей.')
-
+                                       text='Дорогой, ' + user['name'] + '! Ты на больничном, а значит время действия бафа не уменьшается!')
             else:
-                new_payment = user['next_payment_amount'] + self.money_delta
-                await db.update_parameter(parameter='next_payment_amount',
-                                          new_value=new_payment,
-                                          user_id=user['user_id'],
-                                          chat_id=user['chat_id'])
+                accepted = await self.get_state_accepted()
+                if accepted:
+                    base_time = await self.get_state_base_time()
+                    await db.update_parameter(parameter='current__time',
+                                              new_value=base_time,
+                                              user_id=user['user_id'],
+                                              chat_id=user['chat_id'])
 
+                    new_payment = user['next_payment_amount'] - self.money_delta
+                    await db.update_parameter(parameter='next_payment_amount',
+                                              new_value=new_payment,
+                                              user_id=user['user_id'],
+                                              chat_id=user['chat_id'])
+
+                    await bot.send_message(chat_id=user['chat_id'],
+                                           text='Поздравляю, ' + mention + ', с еще одним успешным днем в баффе!'
+                                                 ' Вернул твое базовое время в ' + str(base_time) + ' секунд и уменьшил'
+                                                 ' твой следующий платеж до ' + str(new_payment) + ' рублей. \n'
+                                                 'Так держать, осталось всего ' + str(days_left) + ' дней!',
+                                           parse_mode="Markdown")
+
+                else:
+                    new_payment = user['next_payment_amount'] + self.money_delta
+                    await db.update_parameter(parameter='next_payment_amount',
+                                              new_value=new_payment,
+                                              user_id=user['user_id'],
+                                              chat_id=user['chat_id'])
+
+                    await bot.send_message(chat_id=user['chat_id'],
+                                           text='К сожалению, ' + mention + ', ты не осмелился увеличить время как'
+                                                ' того велел бафф и теперь твой следующий платеж составит '
+                                                + str(new_payment) + ' рублей. \n'
+                                                'Но ничего, бафф еще будет действовать ' + str(days_left) + ' дней, ты наверстаешь упущенное =)',
+                                           parse_mode="Markdown")
+
+                await self.reset_all_states()
+                today_time = await self.today_time()
+                if today_time <= 40:
+                    roll_god_attitude = 'благосклоны'
+                else:
+                    roll_god_attitude = 'не благосклоны'
                 await bot.send_message(chat_id=user['chat_id'],
-                                       text='К сожалению, ' + user['name'] + ', ты не осмелился увеличить время как'
-                                            ' того велел бафф и теперь твой следующий платеж составит '
-                                            + str(new_payment) + ' рублей.')
-
-            await self.reset_all_states()
-            today_time = await self.today_time()
-            if today_time <= 40:
-                roll_god_attitude = 'благосклоны'
-            else:
-                roll_god_attitude = 'не благосклоны'
-            await bot.send_message(chat_id=user['chat_id'],
-                                   text='Боги ролла к тебе сегодня ' + str(today.strftime("%d %b %Y")) + ' ' + roll_god_attitude + ', ' + user['name'] + '! \n'
-                                        'Они предлагают тебе увеличить время на ' + str(today_time) + '%\n'
-                                        'Ты можешь согласиться или отказаться в "Использовать бафф" ==> "Счастливчик" ==> "Изменение времени на сегодня" \n'
-                                        'Напоминаю, что бездействие равно отказу.')
+                                       text='Боги ролла к тебе сегодня ' + str(today.strftime("%d %b %Y")) + ' ' + roll_god_attitude + ', ' + mention + '! \n'
+                                            'Они предлагают тебе увеличить время на ' + str(today_time) + '%\n'
+                                            'Ты можешь согласиться или отказаться в "Использовать бафф" ==> "Счастливчик" ==> "Изменение времени на сегодня" \n'
+                                            'Напоминаю, что бездействие равно отказу.',
+                                       parse_mode="Markdown")
 
         elif expired:
             await bot.send_message(chat_id=user['chat_id'],
-                                   text='Ура, ' + user['name'] + '! Действие баффа "Счастливчик" закончилось!')
+                                   text='Ура, ' + mention + '! Действие баффа "Счастливчик" закончилось!',
+                                   parse_mode="Markdown")
             await self.reset_all_states()
 
     async def set_state_today_time(self, today_time):

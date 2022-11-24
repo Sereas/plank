@@ -23,7 +23,7 @@ from keyboards.inline.buffs_keyboard import show_buffs_keyboard
 from keyboards.inline.checkbox import names_tag_planked_checkbox, get_checked_users
 from keyboards.inline.menu_keyboards import main_menu_keyboard, change_parameters_keyboard, menu_cd, \
     change_politeness_keyboard, names_tag_planked_keyboard, admin_cd, names_missed_day_keyboard
-from loader import dp, db
+from loader import dp, db, bot
 
 
 @dp.message_handler(Command('menu'))
