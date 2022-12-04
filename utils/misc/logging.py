@@ -4,3 +4,4 @@ logging.basicConfig(format=u'%(filename)s [LINE:%(lineno)d] #%(levelname)-8s [%(
                     level=logging.INFO,
                     # level=logging.DEBUG,  # Можно заменить на другой уровень логгирования.
                     )
+sgsgss
