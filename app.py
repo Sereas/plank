@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+
 from aiogram import executor
 
 from handlers.groups.day_stats import get_day_stats, check_increases, eod_check_buffs_impact
@@ -19,7 +20,7 @@ def set_scheduled_jobs(scheduler):
 
 async def on_startup(dispatcher):
     # Устанавливаем дефолтные команды
-    logging.info('Запускаем таблицу пользователей')
+    logging.error('Запускаем таблицу пользователей')
     await db.create_table_users()
     await db_logs.create_table_logs()
     await db_buffs.create_table_buffs()

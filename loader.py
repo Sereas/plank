@@ -10,10 +10,17 @@ from utils.db_api.logs_db import DatabaseLogs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 loop = asyncio.get_event_loop()
-logging.basicConfig(format=u'%(filename)s [LINE:%(lineno)d] #%(levelname)-8s [%(asctime)s]  %(message)s',
+
+file_handler = logging.FileHandler("All_logs.log")
+file_handler.setLevel(logging.WARNING)
+stream_handler = logging.StreamHandler()
+logging.basicConfig(format=f"%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s",
                     level=logging.INFO,
+                    handlers=(file_handler, stream_handler),
                     # level=logging.DEBUG,  # Можно заменить на другой уровень логгирования.
                     )
+
+_log_format = f"%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
